@@ -3,21 +3,27 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Recycle, ArrowRight } from 'lucide-react';
-import { useLanguage } from '@/context/LanguageContext';
 
 import api from '@/services/api';
 
 export default function Register() {
     const navigate = useNavigate();
-    const { t } = useLanguage();
     const [formData, setFormData] = useState({ full_name: '', email: '', password: '', role: 'citizen' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleRegister = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+
+        if (formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match');
+            setLoading(false);
+            return;
+        }
 
         try {
             await api.post('/auth/register', {
@@ -92,7 +98,7 @@ export default function Register() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300 ml-1">{t.setPassword}</label>
+                            <label className="text-sm font-medium text-slate-300 ml-1">Set Password</label>
                             <Input
                                 type="password"
                                 id="password"
@@ -126,10 +132,10 @@ export default function Register() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <Link to="/register/recycler" className="text-[10px] uppercase tracking-widest font-bold text-slate-500 hover:text-orange-400 transition-colors py-2 px-1 border border-white/5 rounded-lg hover:border-orange-500/20">
-                                {t.registerFacility}
+                                Register Facility
                             </Link>
                             <Link to="/register/collector" className="text-[10px] uppercase tracking-widest font-bold text-slate-500 hover:text-blue-400 transition-colors py-2 px-1 border border-white/5 rounded-lg hover:border-blue-500/20">
-                                {t.registerAgent}
+                                Register Agent
                             </Link>
                         </div>
                     </div>
