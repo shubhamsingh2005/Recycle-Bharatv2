@@ -4,6 +4,8 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 require('dotenv').config();
 
+
+// Enforce restart to pick up authController changes
 const app = express();
 
 // Explicit CORS to prevent any blocking (MUST BE FIRST)
@@ -36,6 +38,7 @@ app.get('/', (req, res) => {
 });
 
 // Routes
+app.use('/api/public', require('./routes/publicRoutes')); // Public routes (no auth)
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/devices', require('./routes/deviceRoutes'));
 app.use('/api/recycling', require('./routes/recyclingRoutes'));
