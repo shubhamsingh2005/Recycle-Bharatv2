@@ -205,6 +205,13 @@ class RecyclingController {
                 { handover_duc: duc }
             );
 
+            // 2. Issue Reward to Citizen immediately upon reaching facility
+            const deviceRes = await pool.query('SELECT owner_id FROM devices WHERE id = $1', [deviceId]);
+            if (deviceRes.rows.length > 0) {
+                const ownerId = deviceRes.rows[0].owner_id;
+                await IncentiveService.issueReward({ userId: ownerId, deviceId });
+            }
+
             // 2. Find and update collector assignment
             // We need to mark it as COMPLETED when delivered
             const assignmentRes = await pool.query(
