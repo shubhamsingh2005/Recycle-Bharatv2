@@ -6,6 +6,7 @@ export const useDevices = () => {
 
     // Fetch Citizen's Devices
     const { data: devices, isLoading, error } = useQuery({
+        refetchInterval: 5000,
         queryKey: ['my-devices'],
         queryFn: async () => {
             console.log('[useDevices] Fetching devices...');
@@ -89,6 +90,7 @@ export const useDevice = (id) => {
                 createdAt: device.created_at
             };
         },
-        enabled: !!id
+        enabled: !!id,
+        refetchInterval: 5000
     });
 };

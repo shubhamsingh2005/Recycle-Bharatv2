@@ -6,7 +6,7 @@ import { Loader2, Truck, UserCheck, CheckCircle2, X, Recycle } from 'lucide-reac
 const RecyclerDashboard = () => {
     const navigate = useNavigate();
     const {
-        requests, deliveries, inventory, collectors,
+        requests, deliveries, inventory, collectors, assigned, recovered,
         isLoading, error, assignCollector, isAssigning,
         confirmDelivery, isDelivering, markRecycled, isRecycling
     } = useRecycler();
@@ -136,6 +136,41 @@ const RecyclerDashboard = () => {
                     </table>
                 </div>
             </div>
+
+            {/* Recycled Ledger Section */}
+            <div className="space-y-4 pt-8 pb-12">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Recycle className="text-teal-400" /> Recycling Ledger (Proven Outcomes)
+                </h2>
+                <div className="bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden">
+                    <table className="w-full text-left">
+                        <thead className="bg-white/[0.03] border-b border-white/5">
+                            <tr>
+                                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Device UID</th>
+                                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Recovered Material (Output)</th>
+                                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Processed Date</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            {(recovered || []).length === 0 ? (
+                                <tr>
+                                    <td colSpan="3" className="p-8 text-center text-slate-600 italic">History is empty.</td>
+                                </tr>
+                            ) : (
+                                recovered.map((r) => (
+                                    <tr key={r._id} className="hover:bg-white/[0.02] transition-colors">
+                                        <td className="p-4 font-mono text-xs text-slate-400">{r.uid}</td>
+                                        <td className="p-4 text-sm font-bold text-teal-400">{r.outcome}</td>
+                                        <td className="p-4 text-xs text-slate-500 text-right">
+                                            {new Date(r.recycledAt).toLocaleDateString()}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 };
@@ -258,6 +293,53 @@ const DeliveryRow = ({ dev, onConfirm, isDelivering }) => {
 };
 
 const InventoryRow = ({ dev, onRecycle, isRecycling }) => {
+    const [material, setMaterial] = useState('');
+    const [isPrompted, setIsPrompted] = useState(false);
+
+    const handleRecycle = () => {
+        if (!material) return alert('Please specify the product output.');
+        if (confirm('Are you certain this device has been recycled? This action is irreversible.')) {
+            onRecycle({ deviceId: dev._id, proofMetadata: { recovered_material: material } });
+        }
+    };
+
+    if (isPrompted) {
+        return (
+            <tr className="bg-emerald-500/5 animate-in fade-in transition-colors">
+                <td colSpan="3" className="p-4">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1">
+                            <label className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-1 block">Specify Product Output</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Copper 200g, Plastic Cases..."
+                                value={material}
+                                onChange={(e) => setMaterial(e.target.value)}
+                                className="w-full bg-slate-950 border border-emerald-500/30 text-sm text-emerald-100 rounded-lg px-3 py-2 focus:border-emerald-500 outline-none"
+                                autoFocus
+                            />
+                        </div>
+                        <div className="flex items-end gap-2">
+                            <button
+                                onClick={() => setIsPrompted(false)}
+                                className="px-3 py-2 text-slate-500 hover:text-white text-xs font-bold"
+                            >
+                                CANCEL
+                            </button>
+                            <button
+                                onClick={handleRecycle}
+                                disabled={!material || isRecycling}
+                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-emerald-900/20"
+                            >
+                                {isRecycling ? 'PROCESSING...' : 'CONFIRM RECYCLE'}
+                            </button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        );
+    }
+
     return (
         <tr className="hover:bg-white/[0.02] transition-colors group">
             <td className="p-4">
@@ -271,7 +353,7 @@ const InventoryRow = ({ dev, onRecycle, isRecycling }) => {
             <td className="p-4">
                 <div className="flex justify-end items-center">
                     <button
-                        onClick={() => onRecycle(dev._id)}
+                        onClick={() => setIsPrompted(true)}
                         disabled={isRecycling}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black transition-all shadow-lg shadow-emerald-900/20 active:scale-95"
                     >

@@ -21,6 +21,24 @@ export const useCollector = () => {
                 ownerId: { email: a.pickup_address } // Hack to show address where email is expected
             }));
         },
+        refetchInterval: 5000
+    });
+
+    // Fetch Job History
+    const { data: history, isLoading: isHistoryLoading } = useQuery({
+        queryKey: ['collector-history'],
+        queryFn: async () => {
+            const res = await api.get('/collector/history');
+            return res.data.map(h => ({
+                _id: h.id,
+                uid: h.device_uid,
+                currentDuc: h.device_uid,
+                model: h.model,
+                updatedAt: h.actual_pickup_time,
+                status: h.current_state
+            }));
+        },
+        refetchInterval: 5000
     });
 
     // Confirm Pickup
@@ -31,6 +49,7 @@ export const useCollector = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries(['collector-assignments']);
+            queryClient.invalidateQueries(['collector-history']);
         },
     });
 
@@ -42,12 +61,15 @@ export const useCollector = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries(['collector-assignments']);
+            queryClient.invalidateQueries(['collector-history']);
         },
     });
 
     return {
         assignments,
+        history,
         isLoading,
+        isHistoryLoading,
         error,
         confirmPickup: pickupMutation.mutateAsync,
         isConfirmingPickup: pickupMutation.isPending,

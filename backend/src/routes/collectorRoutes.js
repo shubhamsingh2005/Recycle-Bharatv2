@@ -7,6 +7,7 @@ const authorize = require('../middleware/rbac');
 router.use(authenticate);
 
 // Only Collectors can access
+router.get('/history', authorize(['COLLECTOR']), CollectorController.getJobHistory);
 router.get('/assignments', authorize(['COLLECTOR']), CollectorController.getAssignedPickups);
 router.post('/assignments/:id/pickup', authorize(['COLLECTOR']), CollectorController.confirmPickup);
 router.post('/assignments/:id/deliver', authorize(['COLLECTOR']), CollectorController.confirmDelivery);

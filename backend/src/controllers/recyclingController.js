@@ -51,12 +51,25 @@ class RecyclingController {
                 `SELECT id, full_name, email FROM users WHERE role = 'COLLECTOR'`
             );
 
+            // 6. Recycled Ledger (Last 10)
+            const recovered = await pool.query(
+                `SELECT d.*, u.full_name as collector_name, le.metadata as outcome_metadata, le.timestamp as recycled_at
+                FROM devices d
+                LEFT JOIN collector_assignments ca ON ca.request_id = (SELECT id FROM recycling_requests WHERE device_id = d.id LIMIT 1)
+                LEFT JOIN users u ON ca.collector_id = u.id
+                LEFT JOIN lifecycle_events le ON (le.device_id = d.id AND le.event_type = 'RECYCLED')
+                WHERE d.current_state = 'RECYCLED'
+                ORDER BY d.updated_at DESC
+                LIMIT 10`
+            );
+
             res.json({
                 requests: requests.rows,
                 deliveries: deliveries.rows,
                 inventory: inventory.rows,
                 assigned: assigned.rows,
-                collectors: collectors.rows
+                collectors: collectors.rows,
+                recovered: recovered.rows
             });
 
         } catch (err) {
@@ -114,7 +127,7 @@ class RecyclingController {
 
     // POST /api/recycling/devices/:id/complete
     static async completeRecycling(req, res) {
-        const deviceId = req.params.id;
+        const deviceId = parseInt(req.params.id, 10);
         // Verify metadata (proof of recycling)
         const { proof_metadata } = req.body;
 

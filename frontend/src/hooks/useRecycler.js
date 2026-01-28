@@ -55,12 +55,21 @@ export const useRecycler = () => {
                 updatedAt: dev.updated_at
             }));
 
-            return { requests, deliveries, inventory, collectors, assigned };
+            // Map Recovered (Ledger)
+            const recovered = (d.recovered || []).map(dev => ({
+                _id: dev.id,
+                model: dev.model,
+                uid: dev.device_uid,
+                outcome: dev.outcome_metadata?.recovered_material || 'Standard Recycling',
+                recycledAt: dev.recycled_at || dev.updated_at
+            }));
+
+            return { requests, deliveries, inventory, collectors, assigned, recovered };
         },
     });
 
     // Destructure for consumption
-    const { requests, deliveries, inventory, collectors, assigned } = dashboardData || { requests: [], deliveries: [], inventory: [], collectors: [], assigned: [] };
+    const { requests, deliveries, inventory, collectors, assigned, recovered } = dashboardData || { requests: [], deliveries: [], inventory: [], collectors: [], assigned: [], recovered: [] };
 
     // Assign Collector
     const assignMutation = useMutation({
@@ -104,6 +113,7 @@ export const useRecycler = () => {
         inventory,
         collectors,
         assigned,
+        recovered,
         isLoading,
         error,
         assignCollector: assignMutation.mutateAsync,

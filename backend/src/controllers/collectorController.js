@@ -23,6 +23,25 @@ class CollectorController {
         }
     }
 
+    // GET /api/collector/history
+    static async getJobHistory(req, res) {
+        try {
+            const history = await pool.query(
+                `SELECT ca.*, rr.pickup_address, d.device_type, d.brand, d.model, d.device_uid, d.current_state
+                 FROM collector_assignments ca
+                 JOIN recycling_requests rr ON ca.request_id = rr.id
+                 JOIN devices d ON rr.device_id = d.id
+                 WHERE ca.collector_id = $1 AND ca.status = 'COMPLETED'
+                 ORDER BY ca.actual_pickup_time DESC`,
+                [req.user.id]
+            );
+            res.json(history.rows);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: 'Server error' });
+        }
+    }
+
     // POST /api/collector/assignments/:id/pickup
     static async confirmPickup(req, res) {
         const assignmentId = req.params.id;
