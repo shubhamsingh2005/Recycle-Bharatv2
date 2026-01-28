@@ -3,7 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Recycle, Truck, Factory, Building2, User, Leaf, ArrowLeft, Sun, Moon, Globe, X, Code, Github, Linkedin, KeyRound, Eye, EyeOff, CreditCard, Phone } from 'lucide-react';
+import { Recycle, Truck, Factory, Building2, User, Leaf, ArrowLeft, Sun, Moon, Globe, X, Code, Github, Linkedin, KeyRound, Eye, EyeOff, CreditCard, Phone, Check } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import api from '@/api/axios';
@@ -558,12 +558,25 @@ export default function Login() {
 
                                 {/* Action Buttons */}
                                 <div className="space-y-2 mt-auto">
-                                    <div className={`w-full py-2 rounded-lg font-medium transition-colors ${selectedRole === role.id
-                                        ? `bg-gradient-to-r ${role.color} text-white shadow-md`
-                                        : `${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'} group-hover:bg-slate-200 dark:group-hover:bg-slate-600`
-                                        }`}>
-                                        {selectedRole === role.id ? t.selected : 'Select'}
-                                    </div>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedRole(role.id);
+                                        }}
+                                        className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2 ${selectedRole === role.id
+                                            ? `bg-gradient-to-r ${role.color} text-white shadow-lg shadow-emerald-500/20 scale-105`
+                                            : `${isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} hover:scale-[1.02] active:scale-95`
+                                        }`}
+                                    >
+                                        {selectedRole === role.id ? (
+                                            <>
+                                                <Check className="w-4 h-4 text-white" />
+                                                {t.selected}
+                                            </>
+                                        ) : (
+                                            'Select'
+                                        )}
+                                    </button>
 
                                     {selectedRole === role.id && role.registerPath && (
                                         <motion.div
