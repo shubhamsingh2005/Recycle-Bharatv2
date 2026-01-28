@@ -65,7 +65,8 @@ export default function Login() {
             const payload = {
                 email: regData.email,
                 password: regData.password,
-                role: selectedRole.toUpperCase(), // Backend expects uppercase
+                // Map 'government' to 'GOVT' for database compatibility
+                role: selectedRole === 'government' ? 'GOVT' : selectedRole.toUpperCase(),
                 full_name: regData.fullName,
                 phone: regData.phone
             };
