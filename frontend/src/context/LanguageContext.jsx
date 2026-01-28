@@ -171,9 +171,6 @@ export const translations = {
         smartwatch: 'Smartwatch',
         audio: 'Audio Device',
         other: 'Other',
-        rewardEarned: 'Reward Earned',
-        statusUpdate: 'Status Update',
-        systemEvent: 'System Event',
         activityDetails: {
             registered: 'Device [{uid}] was successfully registered in the system.',
             transitioned: 'Device transitioned to {status}.',
@@ -353,9 +350,6 @@ export const translations = {
         smartwatch: 'स्मार्टवॉच',
         audio: 'ऑडियो डिवाइस',
         other: 'अन्य',
-        rewardEarned: 'इनाम मिला',
-        statusUpdate: 'स्थिति अपडेट',
-        systemEvent: 'सिस्टम इवेंट',
         activityDetails: {
             registered: 'डिवाइस [{uid}] सफलतापूर्वक सिस्टम में पंजीकृत किया गया था।',
             transitioned: 'डिवाइस {status} की ओर बढ़ा।',
@@ -535,9 +529,6 @@ export const translations = {
         smartwatch: 'ਸਮਾਰਟਵਾਚ',
         audio: 'ਆਡੀਓ ਡਿਵਾਈਸ',
         other: 'ਹੋਰ',
-        rewardEarned: 'ਇਨਾਮ ਮਿਲਿਆ',
-        statusUpdate: 'ਸਥਿਤੀ ਅਪਡੇਟ',
-        systemEvent: 'ਸਿਸਟਮ ਈਵੈਂਟ',
         activityDetails: {
             registered: 'ਡਿਵਾਈਸ [{uid}] ਸਿਸਟਮ ਵਿੱਚ ਸਫਲਤਾਪੂਰਵਕ ਰਜਿਸਟਰ ਹੋ ਗਈ ਸੀ।',
             transitioned: 'ਡਿਵਾਈਸ {status} ਵਿੱਚ ਤਬਦੀਲ ਹੋ ਗਈ।',
