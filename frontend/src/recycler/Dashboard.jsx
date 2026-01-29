@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecycler } from '../hooks/useRecycler';
-import { Loader2, Truck, UserCheck, CheckCircle2, X, Recycle } from 'lucide-react';
+import { Loader2, Truck, UserCheck, CheckCircle2, X, Recycle, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const RecyclerDashboard = () => {
     const navigate = useNavigate();
+    const { theme, setTheme } = useTheme();
+    const { language, setLanguage } = useLanguage();
     const {
         requests, deliveries, inventory, collectors, assigned, recovered,
         isLoading, error, assignCollector, isAssigning,
@@ -14,7 +18,30 @@ const RecyclerDashboard = () => {
     if (isLoading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-orange-500" /></div>;
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-12">
+        <div className="p-6 max-w-7xl mx-auto space-y-8">
+            {/* Top Right Controls */}
+            <div className="flex justify-end gap-3">
+                {/* Language Switcher */}
+                <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    className="flex items-center gap-3 px-4 py-2 border rounded-lg transition-all text-xs font-bold uppercase tracking-wider outline-none cursor-pointer appearance-none bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+                >
+                    <option value="en">EN</option>
+                    <option value="hi">HI</option>
+                    <option value="pa">PA</option>
+                </select>
+
+                {/* Theme Toggle */}
+                <button
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    className="flex items-center gap-2 px-4 py-2 border rounded-lg transition-all group bg-white border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700"
+                >
+                    <div className={`${theme === 'dark' ? 'text-blue-400' : 'text-orange-500'}`}>
+                        {theme === 'dark' ? <Moon size={14} /> : <Sun size={14} />}
+                    </div>
+                </button>
+            </div>
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-amber-600 bg-clip-text text-transparent">
                     Recycle Bharat | Facility Operations
@@ -31,12 +58,12 @@ const RecyclerDashboard = () => {
             )}
 
             <div className="space-y-4">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <Truck className="text-blue-400" /> Incoming Requests
                 </h2>
-                <div className="bg-card/30 border border-white/5 rounded-2xl overflow-hidden shadow-xl">
+                <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm dark:shadow-xl">
                     <table className="w-full text-left">
-                        <thead className="bg-white/[0.03] border-b border-white/5">
+                        <thead className="bg-slate-50 dark:bg-white/[0.03] border-b border-slate-200 dark:border-white/5">
                             <tr>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Device Identity</th>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Owner</th>
@@ -44,7 +71,7 @@ const RecyclerDashboard = () => {
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Assign Logistics</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                             {requests?.length === 0 ? (
                                 <tr>
                                     <td colSpan="4" className="p-16 text-center text-slate-500">
@@ -71,12 +98,12 @@ const RecyclerDashboard = () => {
 
             {/* Incoming Deliveries Section */}
             <div className="space-y-4 pt-8">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <Truck className="text-orange-400" /> Inbound Logistics (Partners in Transit)
                 </h2>
-                <div className="bg-card/30 border border-white/5 rounded-2xl overflow-hidden shadow-xl">
+                <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm dark:shadow-xl">
                     <table className="w-full text-left">
-                        <thead className="bg-white/[0.03] border-b border-white/5">
+                        <thead className="bg-slate-50 dark:bg-white/[0.03] border-b border-slate-200 dark:border-white/5">
                             <tr>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Device Identity</th>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Partner</th>
@@ -84,7 +111,7 @@ const RecyclerDashboard = () => {
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Verify Handover</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                             {(deliveries || []).length === 0 ? (
                                 <tr>
                                     <td colSpan="4" className="p-12 text-center text-slate-600">
@@ -108,19 +135,19 @@ const RecyclerDashboard = () => {
 
             {/* Materials at Facility Section */}
             <div className="space-y-4 pt-8">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <CheckCircle2 className="text-emerald-400" /> Materials at Facility (Awaiting Final Recycling)
                 </h2>
-                <div className="bg-card/30 border border-white/5 rounded-2xl overflow-hidden shadow-xl">
+                <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm dark:shadow-xl">
                     <table className="w-full text-left">
-                        <thead className="bg-white/[0.03] border-b border-white/5">
+                        <thead className="bg-slate-50 dark:bg-white/[0.03] border-b border-slate-200 dark:border-white/5">
                             <tr>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Device Identity</th>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Handed Over By</th>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Final Action</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                             {inventory?.length === 0 ? (
                                 <tr>
                                     <td colSpan="3" className="p-12 text-center text-slate-600">
@@ -139,19 +166,19 @@ const RecyclerDashboard = () => {
 
             {/* Active Dispatches (Assigned but not yet Picked Up) */}
             <div className="space-y-4 pt-8">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <Truck className="text-blue-400" /> Active Dispatches (Awaiting Pickup)
                 </h2>
-                <div className="bg-card/30 border border-white/5 rounded-2xl overflow-hidden shadow-xl">
+                <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm dark:shadow-xl">
                     <table className="w-full text-left">
-                        <thead className="bg-white/[0.03] border-b border-white/5">
+                        <thead className="bg-slate-50 dark:bg-white/[0.03] border-b border-slate-200 dark:border-white/5">
                             <tr>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Device Identity</th>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Assigned Partner</th>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                             {assigned?.length === 0 ? (
                                 <tr>
                                     <td colSpan="3" className="p-12 text-center text-slate-600">
@@ -160,13 +187,13 @@ const RecyclerDashboard = () => {
                                 </tr>
                             ) : (
                                 assigned.map((dev) => (
-                                    <tr key={dev._id} className="hover:bg-white/[0.02] transition-colors">
+                                    <tr key={dev._id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
                                         <td className="p-4">
-                                            <div className="font-medium text-white">{dev.model}</div>
+                                            <div className="font-medium text-slate-900 dark:text-white">{dev.model}</div>
                                             <div className="text-[10px] font-mono text-slate-500">{dev.uid}</div>
                                         </td>
                                         <td className="p-4">
-                                            <div className="text-sm text-slate-300 font-bold">{dev.collectorId?.displayName}</div>
+                                            <div className="text-sm text-slate-600 dark:text-slate-300 font-bold">{dev.collectorId?.displayName}</div>
                                             <div className="text-[10px] text-slate-500">{dev.collectorId?.email}</div>
                                         </td>
                                         <td className="p-4">
@@ -185,26 +212,26 @@ const RecyclerDashboard = () => {
 
             {/* Recycled Ledger Section */}
             <div className="space-y-4 pt-8 pb-12">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <Recycle className="text-teal-400" /> Recycling Ledger (Proven Outcomes)
                 </h2>
-                <div className="bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden">
+                <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm dark:shadow-xl">
                     <table className="w-full text-left">
-                        <thead className="bg-white/[0.03] border-b border-white/5">
+                        <thead className="bg-slate-50 dark:bg-white/[0.03] border-b border-slate-200 dark:border-white/5">
                             <tr>
                                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Device UID</th>
                                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Recovered Material (Output)</th>
                                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Processed Date</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                             {(recovered || []).length === 0 ? (
                                 <tr>
                                     <td colSpan="3" className="p-8 text-center text-slate-600 italic">History is empty.</td>
                                 </tr>
                             ) : (
                                 recovered.map((r) => (
-                                    <tr key={r._id} className="hover:bg-white/[0.02] transition-colors">
+                                    <tr key={r._id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
                                         <td className="p-4 font-mono text-xs text-slate-400">{r.uid}</td>
                                         <td className="p-4 text-sm font-bold text-teal-400">{r.outcome}</td>
                                         <td className="p-4 text-xs text-slate-500 text-right">
@@ -235,13 +262,13 @@ const RequestRow = ({ req, collectors, onAssign, isAssigning, navigate }) => {
     };
 
     return (
-        <tr className="hover:bg-white/[0.02] transition-colors group">
+        <tr className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
             <td className="p-4">
-                <div className="font-medium text-white">{req.model}</div>
+                <div className="font-medium text-slate-900 dark:text-white">{req.model}</div>
                 <div className="text-[10px] font-mono text-slate-500 mt-1 select-all">{req.uid}</div>
             </td>
             <td className="p-4">
-                <div className="text-sm text-slate-300">{req.ownerId?.email || 'N/A'}</div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">{req.ownerId?.email || 'N/A'}</div>
                 <div className="text-[10px] text-slate-500">Citizen Account</div>
             </td>
             <td className="p-4">
@@ -253,7 +280,7 @@ const RequestRow = ({ req, collectors, onAssign, isAssigning, navigate }) => {
                     <select
                         value={selectedCollector}
                         onChange={(e) => setSelectedCollector(e.target.value)}
-                        className="bg-slate-900 border border-white/10 text-xs text-white rounded-lg px-2 py-1.5 focus:border-orange-500/50 outline-none transition-all"
+                        className="bg-white dark:bg-slate-950 border border-slate-300 dark:border-white/10 text-xs text-slate-700 dark:text-white rounded-lg px-3 py-2 w-48 focus:border-orange-500/50 outline-none transition-all shadow-sm"
                     >
                         <option value="">Select Logistics Partner...</option>
                         {collectors.map(c => (
@@ -292,13 +319,13 @@ const DeliveryRow = ({ dev, onConfirm, isDelivering }) => {
     };
 
     return (
-        <tr className="hover:bg-white/[0.02] transition-colors group">
+        <tr className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
             <td className="p-4">
-                <div className="font-medium text-white group-hover:text-orange-400 transition-colors">{dev.model}</div>
+                <div className="font-medium text-slate-900 dark:text-white group-hover:text-orange-400 transition-colors">{dev.model}</div>
                 <div className="text-[10px] font-mono text-slate-500 uppercase">{dev.uid}</div>
             </td>
             <td className="p-4">
-                <div className="text-sm text-slate-300 font-bold">{dev.collectorId?.displayName}</div>
+                <div className="text-sm text-slate-600 dark:text-slate-300 font-bold">{dev.collectorId?.displayName}</div>
                 <div className="text-[10px] text-slate-500">{dev.collectorId?.email}</div>
             </td>
             <td className="p-4">
@@ -314,7 +341,7 @@ const DeliveryRow = ({ dev, onConfirm, isDelivering }) => {
                                 value={duc}
                                 onChange={(e) => setDuc(e.target.value.replace(/\D/g, ''))}
                                 placeholder="PARTNER DUC"
-                                className="bg-slate-950 border border-orange-500/30 text-[10px] font-black tracking-widest text-orange-400 rounded-lg px-3 py-2 w-32 focus:border-orange-500 outline-none transition-all"
+                                className="bg-slate-50 dark:bg-slate-950 border border-orange-500/30 text-[10px] font-black tracking-widest text-orange-600 dark:text-orange-400 rounded-lg px-3 py-2 w-32 focus:border-orange-500 outline-none transition-all"
                                 autoFocus
                             />
                             <button
@@ -366,7 +393,7 @@ const InventoryRow = ({ dev, onRecycle, isRecycling }) => {
                                 placeholder="e.g. Copper 200g, Plastic Cases..."
                                 value={material}
                                 onChange={(e) => setMaterial(e.target.value)}
-                                className="w-full bg-slate-950 border border-emerald-500/30 text-sm text-emerald-100 rounded-lg px-3 py-2 focus:border-emerald-500 outline-none"
+                                className="w-full bg-slate-50 dark:bg-slate-950 border border-emerald-500/30 text-sm text-emerald-700 dark:text-emerald-100 rounded-lg px-3 py-2 focus:border-emerald-500 outline-none"
                                 autoFocus
                             />
                         </div>
@@ -392,13 +419,13 @@ const InventoryRow = ({ dev, onRecycle, isRecycling }) => {
     }
 
     return (
-        <tr className="hover:bg-white/[0.02] transition-colors group">
+        <tr className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
             <td className="p-4">
-                <div className="font-medium text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight">{dev.model}</div>
+                <div className="font-medium text-slate-900 dark:text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight">{dev.model}</div>
                 <div className="text-[10px] font-mono text-slate-500">{dev.uid}</div>
             </td>
             <td className="p-4">
-                <div className="text-sm text-slate-300 font-bold">{dev.collectorId?.displayName}</div>
+                <div className="text-sm text-slate-600 dark:text-slate-300 font-bold">{dev.collectorId?.displayName}</div>
                 <div className="text-[10px] text-slate-500 italic">Verified Logistical Link</div>
             </td>
             <td className="p-4">
