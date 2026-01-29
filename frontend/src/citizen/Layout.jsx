@@ -1,9 +1,10 @@
 import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, History, Award, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, Package, History, Award, LogOut, User, Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import logo from '../applogo.png';
 
 export default function CitizenLayout() {
@@ -11,6 +12,11 @@ export default function CitizenLayout() {
     const navigate = useNavigate();
     const { t } = useLanguage();
     const { logout } = useAuth();
+    const { theme, setTheme } = useTheme();
+
+    const toggleTheme = () => {
+        setTheme(theme === 'dark' ? 'light' : 'dark');
+    };
 
     const navItems = [
         { label: t.myDevices, icon: Package, path: '/citizen/dashboard' },
@@ -49,8 +55,17 @@ export default function CitizenLayout() {
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-slate-200 dark:border-slate-800">
-                    <Link to="/citizen/profile" className="flex items-center gap-3 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-emerald-700 mb-1 font-medium transition-colors">
+                <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
+                    {/* Theme Toggle */}
+                    <button
+                        onClick={toggleTheme}
+                        className="flex items-center gap-3 px-3 py-2 w-full text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                    >
+                        {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                        {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                    </button>
+
+                    <Link to="/citizen/profile" className="flex items-center gap-3 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-emerald-700 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium">
                         <User className="w-4 h-4" /> {t.profile}
                     </Link>
                     <button
