@@ -146,11 +146,11 @@ class RecyclingController {
             });
 
         } catch (err) {
-            console.error(err);
+            console.error('[ASSIGN_COLLECTOR_ERROR]', err);
             if (err.code === 'FSM_VIOLATION' || err.code === 'RBAC_VIOLATION') {
                 return res.status(err.status || 400).json(err);
             }
-            res.status(500).json({ message: 'Server error' });
+            res.status(500).json({ message: 'Server error: ' + err.message });
         }
     }
 

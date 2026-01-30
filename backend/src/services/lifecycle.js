@@ -8,8 +8,12 @@ const FSM = {
         'REFURB_DIAGNOSTIC_REQUESTED': ['CITIZEN'],
         'REQUESTED': ['CITIZEN'] // Alias or if state name changed
     },
-    'REQUESTED': { // Support both names if unsure, or align with DB
-        'REFURB_ACCEPTED': ['REFURBISHER']
+    'RECYCLING_REQUESTED': {
+        'COLLECTOR_ASSIGNED': ['RECYCLER', 'ADMIN']
+    },
+    'REQUESTED': {
+        'REFURB_ACCEPTED': ['REFURBISHER'],
+        'COLLECTOR_ASSIGNED': ['RECYCLER', 'ADMIN'] // Support alias
     },
     'REFURB_DIAGNOSTIC_REQUESTED': {
         'REFURB_ACCEPTED': ['REFURBISHER']

@@ -48,7 +48,7 @@ const RecyclerDashboard = () => {
             {error && (
                 <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-2xl text-sm flex items-center gap-3">
                     <div className="w-1 h-6 bg-red-500 rounded-full" />
-                    {error.response?.data?.error || error.message}
+                    {error.response?.data?.message || error.response?.data?.error || error.message}
                 </div>
             )}
 
