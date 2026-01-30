@@ -101,20 +101,39 @@ class RecyclingController {
             const request = requestRes.rows[0];
 
             // 2. Transition Device State (RECYCLING_REQUESTED -> COLLECTOR_ASSIGNED)
-            await LifecycleService.transitionState(
-                request.device_id,
-                'COLLECTOR_ASSIGNED',
-                req.user
-            );
+            // If already COLLECTOR_ASSIGNED, skip transition (Re-assignment scenario)
+            const deviceCheck = await pool.query('SELECT current_state FROM devices WHERE id = $1', [request.device_id]);
+            const currentDeviceState = deviceCheck.rows[0]?.current_state;
 
-            // 3. Create Assignment & Update Request Status
-            // (Ideally in tx, doing sequentially for MVP)
-            const assignment = await pool.query(
-                `INSERT INTO collector_assignments (request_id, collector_id, scheduled_pickup_time, status)
-                VALUES ($1, $2, $3, 'ASSIGNED')
-                RETURNING *`,
-                [requestId, collector_id, scheduled_time]
-            );
+            if (currentDeviceState !== 'COLLECTOR_ASSIGNED') {
+                await LifecycleService.transitionState(
+                    request.device_id,
+                    'COLLECTOR_ASSIGNED',
+                    req.user
+                );
+            }
+
+            // 3. Create or Update Assignment & Update Request Status
+            // Check for existing assignment to avoid duplicates/errors or allow upsert
+            const existingAssignment = await pool.query('SELECT id FROM collector_assignments WHERE request_id = $1', [requestId]);
+
+            let assignment;
+            if (existingAssignment.rows.length > 0) {
+                assignment = await pool.query(
+                    `UPDATE collector_assignments 
+                     SET collector_id = $1, scheduled_pickup_time = $2, status = 'ASSIGNED', assigned_at = NOW()
+                     WHERE request_id = $3
+                     RETURNING *`,
+                    [collector_id, scheduled_time, requestId]
+                );
+            } else {
+                assignment = await pool.query(
+                    `INSERT INTO collector_assignments (request_id, collector_id, scheduled_pickup_time, status)
+                    VALUES ($1, $2, $3, 'ASSIGNED')
+                    RETURNING *`,
+                    [requestId, collector_id, scheduled_time]
+                );
+            }
 
             await pool.query(
                 "UPDATE recycling_requests SET status = 'ASSIGNED' WHERE id = $1",
