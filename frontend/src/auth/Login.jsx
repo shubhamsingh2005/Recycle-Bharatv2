@@ -3,7 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Recycle, Truck, Factory, Building2, User, Leaf, ArrowLeft, Sun, Moon, Globe, X, Code, Github, Linkedin, KeyRound, Eye, EyeOff, CreditCard, Phone, Check } from 'lucide-react';
+import { Recycle, Truck, Factory, Building2, User, Leaf, ArrowLeft, Sun, Moon, Globe, X, Code, Github, Linkedin, KeyRound, Eye, EyeOff, CreditCard, Phone, Check, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import api from '@/api/axios';
@@ -98,10 +98,14 @@ export default function Login() {
 
     // Stats state
     const [stats, setStats] = useState([
-        { value: '...', label: t.devicesRecycled, icon: Recycle, key: 'devicesRecycled' },
-        { value: '...', label: t.activeCitizens, icon: User, key: 'activeCitizens' },
-        { value: '...', label: t.wasteDiverted, icon: Leaf, key: 'wasteDiverted' },
-        { value: '...', label: t.recyclingCenters, icon: Factory, key: 'recyclingCenters' },
+        { value: '...', label: 'Devices Registered', icon: Recycle, key: 'devicesRecycled' },
+        { value: '...', label: 'Active Citizens', icon: User, key: 'activeCitizens' },
+        { value: '...', label: 'Refurbishers', icon: RefreshCw, key: 'activeRefurbishers' },
+        { value: '...', label: 'Logistics Partners', icon: Truck, key: 'activeCollectors' },
+        { value: '...', label: 'Field Agents', icon: User, key: 'activeAgents' },
+        { value: '...', label: 'Recycling Centers', icon: Factory, key: 'recyclingCenters' },
+        { value: '...', label: 'Devices Refurbished', icon: Check, key: 'devicesRefurbished' },
+        { value: '...', label: 'Waste Diverted', icon: Leaf, key: 'wasteDiverted' },
     ]);
 
     const languages = [
@@ -133,19 +137,18 @@ export default function Login() {
                 const data = response.data;
 
                 setStats([
-                    { value: `${data.devicesRecycled}`, label: t.devicesRecycled, icon: Recycle, key: 'devicesRecycled' },
+                    { value: `${data.devicesRecycled}`, label: t.devicesRecycled || 'Devices Registered', icon: Recycle, key: 'devicesRecycled' },
                     { value: `${data.activeCitizens}`, label: t.activeCitizens, icon: User, key: 'activeCitizens' },
+                    { value: `${data.activeRefurbishers}`, label: 'Refurbishers', icon: RefreshCw, key: 'activeRefurbishers' },
+                    { value: `${data.activeCollectors}`, label: 'Logistics Partners', icon: Truck, key: 'activeCollectors' },
+                    { value: `${data.activeAgents}`, label: 'Field Agents', icon: User, key: 'activeAgents' },
+                    { value: `${data.activeRecyclers}`, label: t.recyclingCenters, icon: Factory, key: 'recyclingCenters' },
+                    { value: `${data.devicesRefurbished}`, label: 'Devices Refurbished', icon: Check, key: 'devicesRefurbished' },
                     { value: `${data.wasteDiverted}%`, label: t.wasteDiverted, icon: Leaf, key: 'wasteDiverted' },
-                    { value: `${data.recyclingCenters}`, label: t.recyclingCenters, icon: Factory, key: 'recyclingCenters' },
                 ]);
             } catch (err) {
                 console.error('[Stats] Failed to fetch stats:', err);
-                setStats([
-                    { value: '0', label: t.devicesRecycled, icon: Recycle, key: 'devicesRecycled' },
-                    { value: '0', label: t.activeCitizens, icon: User, key: 'activeCitizens' },
-                    { value: '0%', label: t.wasteDiverted, icon: Leaf, key: 'wasteDiverted' },
-                    { value: '0', label: t.recyclingCenters, icon: Factory, key: 'recyclingCenters' },
-                ]);
+                // Keep default or set to 0
             }
         };
 
@@ -155,7 +158,7 @@ export default function Login() {
     // Read role from URL parameter and auto-select it
     useEffect(() => {
         const roleParam = searchParams.get('role');
-        if (roleParam && ['citizen', 'collector', 'recycler', 'government'].includes(roleParam)) {
+        if (roleParam && ['citizen', 'collector', 'recycler', 'government', 'refurbisher', 'refurbisher_agent'].includes(roleParam)) {
             setSelectedRole(roleParam);
         }
     }, [searchParams]);
@@ -195,7 +198,10 @@ export default function Login() {
             }
 
             // Normalize role for navigation (govt -> government)
-            const navigationRole = userRole === 'govt' ? 'government' : userRole;
+            let navigationRole = userRole === 'govt' ? 'government' : userRole;
+            // Map underscores to dashes for agent
+            if (navigationRole === 'refurbisher_agent') navigationRole = 'refurbisher-agent';
+
             navigate(`/${navigationRole}/dashboard`);
         } catch (err) {
             console.error('Login error:', err);
@@ -268,6 +274,34 @@ export default function Login() {
             activeBg: 'bg-purple-600',
             registerPath: '/register/government',
             registerLabel: t.registerGovernment || t.contactAdmin
+        },
+        {
+            id: 'refurbisher',
+            title: 'Refurbish Center',
+            description: 'Evaluate and repair electronic devices for circular economy.',
+            icon: RefreshCw,
+            color: 'from-blue-600 to-blue-700',
+            hoverColor: 'hover:from-blue-700 hover:to-blue-800',
+            iconBg: 'bg-blue-100',
+            iconColor: 'text-blue-600',
+            borderColor: 'border-blue-600',
+            activeBg: 'bg-blue-600',
+            registerPath: '/register/refurbisher',
+            registerLabel: 'Register Center'
+        },
+        {
+            id: 'refurbisher_agent',
+            title: 'Refurbish Agent',
+            description: 'Field agent handling doorstep diagnostics and device collection.',
+            icon: Truck,
+            color: 'from-sky-500 to-sky-600',
+            hoverColor: 'hover:from-sky-600 hover:to-sky-700',
+            iconBg: 'bg-sky-100',
+            iconColor: 'text-sky-600',
+            borderColor: 'border-sky-600',
+            activeBg: 'bg-sky-600',
+            registerPath: '/register/refurbisher-agent',
+            registerLabel: 'Join as Agent'
         },
     ];
 
@@ -484,23 +518,23 @@ export default function Login() {
                 {/* Stats Section - Floating Bar Design */}
                 <div className="relative z-20 px-4 mb-16">
                     <motion.div
-                        className={`max-w-6xl mx-auto -mt-16 rounded-2xl shadow-xl ${isDarkMode ? 'bg-slate-800' : 'bg-white'} py-8 px-8 transform transition-colors`}
+                        className={`max-w-7xl mx-auto -mt-16 rounded-3xl shadow-2xl ${isDarkMode ? 'bg-slate-800' : 'bg-white'} py-10 px-8 transform transition-colors border border-slate-100 dark:border-slate-700`}
                         initial={{ opacity: 0, y: 40 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, delay: 0.2 }}
                     >
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-slate-100 dark:divide-slate-700">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-8">
                             {stats.map((stat) => (
                                 <div key={stat.key} className="flex items-center justify-center gap-4 group">
-                                    <div className={`group-hover:scale-110 transition-transform duration-300`}>
-                                        <stat.icon className="w-10 h-10 text-rose-500 stroke-[1.5]" />
+                                    <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'} group-hover:scale-110 transition-transform duration-300`}>
+                                        <stat.icon className="w-8 h-8 text-emerald-600 dark:text-emerald-400 stroke-[1.5]" />
                                     </div>
                                     <div className="text-left">
-                                        <div className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                        <div className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                                             {stat.value}
                                         </div>
-                                        <div className={`text-[10px] md:text-xs uppercase tracking-wider font-semibold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} mt-1`}>
+                                        <div className={`text-[10px] uppercase tracking-widest font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} mt-1`}>
                                             {stat.label}
                                         </div>
                                     </div>
@@ -566,7 +600,7 @@ export default function Login() {
                                         className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2 ${selectedRole === role.id
                                             ? `bg-gradient-to-r ${role.color} text-white shadow-lg shadow-emerald-500/20 scale-105`
                                             : `${isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} hover:scale-[1.02] active:scale-95`
-                                        }`}
+                                            }`}
                                     >
                                         {selectedRole === role.id ? (
                                             <>
@@ -766,6 +800,34 @@ export default function Login() {
                                                 </label>
                                                 <Input
                                                     placeholder="e.g. Pollution Control Board"
+                                                    className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50 text-white"
+                                                    value={regData.organization}
+                                                    onChange={(e) => setRegData({ ...regData, organization: e.target.value })}
+                                                    required
+                                                />
+                                            </div>
+                                        )}
+                                        {selectedRole === 'refurbisher_agent' && (
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-slate-300 ml-1 flex items-center gap-2">
+                                                    <Truck className="w-4 h-4" /> Service Provider
+                                                </label>
+                                                <Input
+                                                    placeholder="e.g. Bharat Electronics"
+                                                    className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50 text-white"
+                                                    value={regData.organization}
+                                                    onChange={(e) => setRegData({ ...regData, organization: e.target.value })}
+                                                    required
+                                                />
+                                            </div>
+                                        )}
+                                        {selectedRole === 'refurbisher' && (
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-slate-300 ml-1 flex items-center gap-2">
+                                                    <RefreshCw className="w-4 h-4" /> Service Center Name
+                                                </label>
+                                                <Input
+                                                    placeholder="e.g. Bharat Electronics Repair Center"
                                                     className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50 text-white"
                                                     value={regData.organization}
                                                     onChange={(e) => setRegData({ ...regData, organization: e.target.value })}

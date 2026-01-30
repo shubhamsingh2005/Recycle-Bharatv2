@@ -41,6 +41,11 @@ import GovernmentDashboard from './government/Dashboard';
 import GovernmentReports from './government/Reports';
 import GovernmentProfileSettings from './government/ProfileSettings';
 
+// Refurbisher Components
+import RefurbisherLayout from './refurbisher/Layout';
+import RefurbisherDashboard from './refurbisher/Dashboard';
+import RefurbisherAgentDashboard from './refurbisher/AgentDashboard';
+
 // Admin Components
 import AdminLayout from './admin/Layout';
 import AdminDashboard from './admin/Dashboard';
@@ -120,6 +125,26 @@ function App() {
                     <Route path="dashboard" element={<GovernmentDashboard />} />
                     <Route path="reports" element={<GovernmentReports />} />
                     <Route path="profile-settings" element={<GovernmentProfileSettings />} />
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                  </Route>
+
+                  {/* Refurbisher Routes */}
+                  <Route path="/refurbisher" element={
+                    <ProtectedRoute allowedRoles={['REFURBISHER', 'REFURBISHER_AGENT']}>
+                      <RefurbisherLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route path="dashboard" element={<RefurbisherDashboard />} />
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                  </Route>
+
+                  {/* Refurbisher Agent Routes */}
+                  <Route path="/refurbisher-agent" element={
+                    <ProtectedRoute allowedRoles={['REFURBISHER_AGENT']}>
+                      <RefurbisherLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route path="dashboard" element={<RefurbisherAgentDashboard />} />
                     <Route index element={<Navigate to="dashboard" replace />} />
                   </Route>
 

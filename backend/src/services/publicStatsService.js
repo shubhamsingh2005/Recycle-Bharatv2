@@ -5,41 +5,55 @@ class PublicStatsService {
         try {
             console.log('[PublicStatsService] Fetching statistics...');
 
-            // Get public statistics without authentication
+            // 1. Get user counts by role
+            const usersByRoleRes = await pool.query(`
+                SELECT role, COUNT(*) as count 
+                FROM users 
+                GROUP BY role
+            `);
+
+            const userCounts = usersByRoleRes.rows.reduce((acc, row) => {
+                acc[row.role] = parseInt(row.count) || 0;
+                return acc;
+            }, {});
+
+            // 2. Get Device Stats
             const devicesRes = await pool.query('SELECT COUNT(*) FROM devices');
-            console.log('[PublicStatsService] Devices query result:', devicesRes.rows);
-
-            const usersRes = await pool.query("SELECT COUNT(*) FROM users WHERE role = 'CITIZEN'");
-            console.log('[PublicStatsService] Citizens query result:', usersRes.rows);
-
             const recycledRes = await pool.query("SELECT COUNT(*) FROM devices WHERE current_state = 'RECYCLED'");
-            console.log('[PublicStatsService] Recycled query result:', recycledRes.rows);
 
-            const centersRes = await pool.query("SELECT COUNT(*) FROM users WHERE role = 'RECYCLER'");
-            console.log('[PublicStatsService] Recyclers query result:', centersRes.rows);
+            // 3. Get Refurbished Stats (Completed Refurbish Jobs)
+            const refurbishedRes = await pool.query("SELECT COUNT(*) FROM refurbish_jobs WHERE job_status = 'COMPLETED'");
 
             const totalDevices = parseInt(devicesRes.rows[0].count) || 0;
-            const totalCitizens = parseInt(usersRes.rows[0].count) || 0;
             const recycledDevices = parseInt(recycledRes.rows[0].count) || 0;
-            const recyclingCenters = parseInt(centersRes.rows[0].count) || 0;
+            const refurbishedDevices = parseInt(refurbishedRes.rows[0].count) || 0;
 
-            console.log('[PublicStatsService] Parsed values:', {
-                totalDevices,
-                totalCitizens,
-                recycledDevices,
-                recyclingCenters
-            });
-
-            // Calculate waste diversion rate
+            // Calculate waste diversion rate (Recycled + Refurbished / Total)
+            // Or just keep it as Recycled/Total? Refurbished is also diverted from waste!
+            const divertedCount = recycledDevices + refurbishedDevices;
             const wasteDiversionRate = totalDevices > 0
-                ? Math.round((recycledDevices / totalDevices) * 100)
+                ? Math.round((divertedCount / totalDevices) * 100)
                 : 0;
 
             const result = {
-                devicesRecycled: totalDevices,
-                activeCitizens: totalCitizens,
+                devicesRecycled: totalDevices, // Keeping key name for compatibility, maybe rename label in UI? Or is this Total registered?
+                // The UI label says "Devices Recycled" but code sends totalDevices (COUNT * from devices). 
+                // That's weird. "Devices Recycled" usually means actually recycled. 
+                // But previously it was totalDevices. I will keep it as "Total Devices Registered" in logic but send as 'devicesRecycled' key if frontend expects it.
+                // Actually, the previous code sent totalDevices as devicesRecycled.
+
+                totalRegisteredDevices: totalDevices,
+                actuallyRecycled: recycledDevices,
+
+                activeCitizens: userCounts['CITIZEN'] || 0,
+                activeRefurbishers: userCounts['REFURBISHER'] || 0,
+                activeCollectors: userCounts['COLLECTOR'] || 0,
+                activeRecyclers: userCounts['RECYCLER'] || 0,
+                activeAgents: userCounts['REFURBISHER_AGENT'] || 0,
+
+                devicesRefurbished: refurbishedDevices,
                 wasteDiverted: wasteDiversionRate,
-                recyclingCenters: recyclingCenters
+                recyclingCenters: userCounts['RECYCLER'] || 0
             };
 
             console.log('[PublicStatsService] Returning:', result);

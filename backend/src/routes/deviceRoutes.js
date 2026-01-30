@@ -10,7 +10,11 @@ router.use(authenticate);
 // CITIZEN Routes
 router.post('/', authorize(['CITIZEN']), DeviceController.registerDevice);
 router.get('/', authorize(['CITIZEN']), DeviceController.getMyDevices);
+// Request recycling for a device
 router.post('/:id/recycle', authorize(['CITIZEN']), DeviceController.requestRecycling);
+
+// Request refurbishing for a device
+router.post('/:id/refurbish', authorize(['CITIZEN']), DeviceController.requestRefurbishing);
 router.get('/:id/duc', authorize(['CITIZEN']), DeviceController.revealDeviceDUC);
 
 module.exports = router;

@@ -12,11 +12,12 @@ export const useRecycler = () => {
             const d = res.data;
 
             // Map Requests
-            const requests = d.requests.map(r => ({
+            const requests = (d.requests || []).map(r => ({
                 _id: r.id,
-                model: r.model,
-                uid: r.device_uid,
+                model: r.model || 'Unknown Device',
+                uid: r.device_uid || `#${r.device_id}`,
                 ownerId: { email: r.citizen_email },
+                source: r.source || 'Citizen Request',
                 createdAt: r.created_at
             }));
 

@@ -4,13 +4,44 @@ const { pool } = require('../config/db');
 // [CurrentState]: { [NextState]: [AllowedRole] }
 const FSM = {
     'ACTIVE': {
-        'RECYCLING_REQUESTED': ['CITIZEN']
+        'RECYCLING_REQUESTED': ['CITIZEN'],
+        'REFURB_DIAGNOSTIC_REQUESTED': ['CITIZEN'],
+        'REQUESTED': ['CITIZEN'] // Alias or if state name changed
     },
-    'RECYCLING_REQUESTED': {
-        'COLLECTOR_ASSIGNED': ['RECYCLER', 'ADMIN'] // System/Recycler assigns collector
+    'REQUESTED': { // Support both names if unsure, or align with DB
+        'REFURB_ACCEPTED': ['REFURBISHER']
+    },
+    'REFURB_DIAGNOSTIC_REQUESTED': {
+        'REFURB_ACCEPTED': ['REFURBISHER']
+    },
+    'REFURB_ACCEPTED': {
+        'REFURB_AGENT_ASSIGNED': ['REFURBISHER']
+    },
+    'REFURB_AGENT_ASSIGNED': {
+        'REFURB_PICKED_UP': ['REFURBISHER_AGENT']
+    },
+    'REFURB_PICKED_UP': {
+        'UNDER_DIAGNOSTIC': ['REFURBISHER']
+    },
+    'UNDER_DIAGNOSTIC': {
+        'PROPOSAL_PENDING': ['REFURBISHER'],
+        'RETURN_AS_IS': ['CITIZEN', 'REFURBISHER']
+    },
+    'PROPOSAL_PENDING': {
+        'REPAIRING': ['CITIZEN'],
+        'COMPONENTS_SOLD': ['CITIZEN']
+    },
+    'REPAIRING': {
+        'ACTIVE': ['CITIZEN'] // Via RTN verification
+    },
+    'COMPONENTS_SOLD': {
+        'WASTE_HANDOVER_PENDING': ['REFURBISHER']
+    },
+    'WASTE_HANDOVER_PENDING': {
+        'COLLECTOR_ASSIGNED': ['RECYCLER', 'ADMIN', 'REFURBISHER'] // Refurbisher can assign via requestWastePickup
     },
     'COLLECTOR_ASSIGNED': {
-        'COLLECTED': ['COLLECTOR']
+        'COLLECTED': ['COLLECTOR', 'RECYCLER'] // Recycler can also mark collected if no separate collector
     },
     'COLLECTED': {
         'DELIVERED_TO_RECYCLER': ['COLLECTOR', 'RECYCLER']
@@ -30,11 +61,12 @@ class LifecycleService {
      * @param {object} user - Authenticated user object {id, role}
      * @param {object} metadata - Optional context (location, proofs, etc.)
      */
-    static async transitionState(deviceId, newState, user, metadata = {}) {
-        const client = await pool.connect();
+    static async transitionState(deviceId, newState, user, metadata = {}, externalClient = null) {
+        const client = externalClient || await pool.connect();
+        const shouldRelease = !externalClient;
 
         try {
-            await client.query('BEGIN');
+            if (shouldRelease) await client.query('BEGIN');
 
             // 1. Fetch Current Device State with Lock
             const deviceRes = await client.query(
@@ -91,7 +123,7 @@ class LifecycleService {
                 [deviceId, currentState, newState, user.id, JSON.stringify({ ...metadata, uid: deviceRes.rows[0].device_uid || 'UNKNOWN', oldStatus: currentState, newStatus: newState })]
             );
 
-            await client.query('COMMIT');
+            if (shouldRelease) await client.query('COMMIT');
 
             return {
                 device_id: deviceId,
@@ -101,10 +133,10 @@ class LifecycleService {
             };
 
         } catch (err) {
-            await client.query('ROLLBACK');
+            if (shouldRelease) await client.query('ROLLBACK');
             throw err;
         } finally {
-            client.release();
+            if (shouldRelease) client.release();
         }
     }
 }

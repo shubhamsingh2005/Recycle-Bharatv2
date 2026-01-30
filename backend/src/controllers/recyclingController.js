@@ -8,13 +8,23 @@ class RecyclingController {
     static async getDashboardData(req, res) {
         try {
             // 1. Incoming Requests (PENDING)
+            // 1. Incoming Requests
+            // - PENDING requests (Citizen initiated, visible to all or specific depending on logic)
+            // - ASSIGNED requests where the current user is the collector (refurbisher initiated)
+
+            // Note: If sender_type is REFURBISHER, it typically skips PENDING and goes to ASSIGNED.
+            // We need to show these in the "Incoming" list so the Recycler can dispatch a driver.
             const requests = await pool.query(
-                `SELECT rr.*, d.device_uid, d.device_type, d.brand, d.model, u.email as citizen_email 
+                `SELECT rr.*, d.device_uid, d.device_type, d.brand, d.model, u.email as citizen_email,
+                        CASE WHEN rr.sender_type = 'REFURBISHER' THEN 'Refurbisher Request' ELSE 'Citizen Request' END as source
                 FROM recycling_requests rr
                 JOIN devices d ON rr.device_id = d.id
                 JOIN users u ON rr.citizen_id = u.id
-                WHERE rr.status = 'PENDING'
-                ORDER BY rr.created_at ASC`
+                LEFT JOIN collector_assignments ca ON rr.id = ca.request_id
+                WHERE (rr.status = 'PENDING') 
+                   OR (rr.status = 'ASSIGNED' AND rr.sender_type = 'REFURBISHER' AND ca.collector_id = $1)
+                ORDER BY rr.created_at ASC`,
+                [req.user.id]
             );
 
             // 2. Incoming Deliveries (COLLECTED -> In Transit)

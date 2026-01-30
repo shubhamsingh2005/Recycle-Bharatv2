@@ -89,17 +89,7 @@ class CollectorController {
             }
 
             // 3. Transition Device State (COLLECTOR_ASSIGNED -> COLLECTED)
-            await client.query(
-                `UPDATE devices SET current_state = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
-                ['COLLECTED', assignment.device_id]
-            );
-
-            // 3b. Log lifecycle event
-            await client.query(
-                `INSERT INTO lifecycle_events (device_id, from_state, to_state, event_type, triggered_by_user_id, metadata, timestamp)
-                 VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
-                [assignment.device_id, assignment.current_state, 'COLLECTED', 'COLLECTED', req.user.id, JSON.stringify({ ...verification_metadata, valid_duc: true })]
-            );
+            await LifecycleService.transitionState(assignment.device_id, 'COLLECTED', req.user, verification_metadata);
 
             // 4. Update Assignment Status (Collector has picked it up)
             const updated = await client.query(

@@ -19,7 +19,7 @@ class AuthController {
                 return res.status(400).json({ message: 'Missing fields. Received: ' + JSON.stringify(req.body) });
             }
 
-            if (!['CITIZEN', 'COLLECTOR', 'RECYCLER', 'GOVT', 'ADMIN'].includes(role)) {
+            if (!['CITIZEN', 'COLLECTOR', 'RECYCLER', 'GOVT', 'ADMIN', 'REFURBISHER', 'REFURBISHER_AGENT'].includes(role)) {
                 console.error('[Auth] Register Validation Failed: Invalid Role', role);
                 return res.status(400).json({ message: 'Invalid role: ' + role });
             }

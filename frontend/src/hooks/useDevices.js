@@ -23,7 +23,13 @@ export const useDevices = () => {
                 description: `${d.brand} ${d.device_type} (${d.purchase_year})`,
                 recycleNumber: d.serial_number || null,
                 isTerminated: d.current_state === 'RECYCLED',
-                createdAt: d.created_at
+                isRefurbished: d.is_refurbished,
+                createdAt: d.created_at,
+                repairQuote: d.repair_quote,
+                buybackQuote: d.buyback_quote,
+                diagnosticReport: d.diagnostic_report,
+                jobStatus: d.job_status,
+                returnCode: d.refurb_return_code
             }));
         },
     });
@@ -53,6 +59,41 @@ export const useDevices = () => {
         },
     });
 
+    // Request Refurbish
+    const refurbishMutation = useMutation({
+        mutationFn: async ({ deviceId, ...data }) => {
+            const res = await api.post(`/devices/${deviceId}/refurbish`, data);
+            return res.data;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['my-devices'] });
+        },
+    });
+
+    // Respond to Proposal
+    const respondMutation = useMutation({
+        mutationFn: async ({ deviceId, ...data }) => {
+            const res = await api.post(`/refurbish/respond`, { deviceId, ...data });
+            return res.data;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['my-devices'] });
+            await queryClient.invalidateQueries({ queryKey: ['device'] });
+        },
+    });
+
+    // Verify Return (Citizen)
+    const verifyReturnMutation = useMutation({
+        mutationFn: async ({ deviceId, returnCode }) => {
+            const res = await api.post(`/refurbish/verify-return`, { deviceId, returnCode });
+            return res.data;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['my-devices'] });
+            await queryClient.invalidateQueries({ queryKey: ['device'] });
+        },
+    });
+
     return {
         devices,
         isLoading,
@@ -61,6 +102,11 @@ export const useDevices = () => {
         isRegistering: registerMutation.isPending,
         requestRecycle: recycleMutation.mutateAsync,
         isRecycling: recycleMutation.isPending,
+        requestRefurbish: refurbishMutation.mutateAsync,
+        isRefurbishing: refurbishMutation.isPending,
+        respondToProposal: respondMutation.mutateAsync,
+        verifyReturn: verifyReturnMutation.mutateAsync,
+        isVerifyingReturn: verifyReturnMutation.isPending,
         revealDuc: async (deviceId) => {
             const res = await api.get(`/devices/${deviceId}/duc`);
             return res.data;
@@ -87,7 +133,13 @@ export const useDevice = (id) => {
                 description: `${device.brand} ${device.device_type}`,
                 purchase_year: device.purchase_year,
                 recycleNumber: device.serial_number || null,
-                createdAt: device.created_at
+                isRefurbished: device.is_refurbished,
+                createdAt: device.created_at,
+                repairQuote: device.repair_quote,
+                buybackQuote: device.buyback_quote,
+                diagnosticReport: device.diagnostic_report,
+                jobStatus: device.job_status,
+                returnCode: device.refurb_return_code
             };
         },
         enabled: !!id,

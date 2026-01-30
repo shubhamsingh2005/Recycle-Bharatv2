@@ -41,7 +41,12 @@ class DeviceController {
     static async getMyDevices(req, res) {
         try {
             const devices = await pool.query(
-                'SELECT * FROM devices WHERE owner_id = $1 ORDER BY created_at DESC',
+                `SELECT d.*, rj.repair_quote, rj.buyback_quote, rj.diagnostic_report, rj.job_status, rj.refurb_return_code, u.full_name as refurbisher_name
+                 FROM devices d
+                 LEFT JOIN refurbish_jobs rj ON d.id = rj.device_id
+                 LEFT JOIN users u ON rj.refurbisher_id = u.id
+                 WHERE d.owner_id = $1 
+                 ORDER BY d.created_at DESC`,
                 [req.user.id]
             );
             res.json(devices.rows);
@@ -93,6 +98,51 @@ class DeviceController {
         }
     }
 
+    // POST /api/devices/:id/refurbish
+    static async requestRefurbishing(req, res) {
+        const deviceId = req.params.id;
+        const { refurbisher_id, pickup_address } = req.body;
+
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            // 1. Lifecycle Transition
+            const transitionResult = await LifecycleService.transitionState(
+                deviceId,
+                'REFURB_DIAGNOSTIC_REQUESTED',
+                req.user
+            );
+
+            // 2. Generate REF Code
+            const pickupCode = 'REF-' + crypto.randomInt(100000, 999999).toString();
+
+            // 3. Create Refurbish Job
+            await client.query(
+                `INSERT INTO refurbish_jobs (device_id, refurbisher_id, citizen_id, refurb_pickup_code, diagnostic_fee_paid, job_status, pickup_address)
+                 VALUES ($1, $2, $3, $4, true, 'REQUESTED', $5)`,
+                [deviceId, refurbisher_id, req.user.id, pickupCode, pickup_address]
+            );
+
+            await client.query('COMMIT');
+
+            res.json({
+                message: 'Refurbishing requested successfully. Fee paid (Simulated).',
+                pickupCode,
+                device_state: transitionResult
+            });
+        } catch (err) {
+            await client.query('ROLLBACK');
+            console.error(err);
+            if (err.code === 'FSM_VIOLATION' || err.code === 'RBAC_VIOLATION' || err.code === 'OWNERSHIP_VIOLATION') {
+                return res.status(err.status || 400).json(err);
+            }
+            res.status(500).json({ message: 'Server error' });
+        } finally {
+            client.release();
+        }
+    }
+
     // GET /api/devices/:id/duc
     static async revealDeviceDUC(req, res) {
         const deviceId = req.params.id;
@@ -112,24 +162,27 @@ class DeviceController {
                 return res.status(403).json({ message: 'Unauthorized' });
             }
 
-            // Logic: Ensure DUC exists
-            let duc = device.current_duc;
-            if (!duc) {
-                // If for some reason it wasn't generated at request time, generate now if state allows
-                if (['RECYCLING_REQUESTED', 'COLLECTOR_ASSIGNED'].includes(device.current_state)) {
-                    duc = crypto.randomInt(100000, 999999).toString();
-                    await pool.query('UPDATE devices SET current_duc = $1 WHERE id = $2', [duc, deviceId]);
-                } else {
-                    return res.status(400).json({ message: 'DUC not available in current state' });
+            // If it's a refurb job, get code from refurbish_jobs
+            if (device.current_state.startsWith('REFURB') || device.current_state === 'UNDER_DIAGNOSTIC' || device.current_state === 'PROPOSAL_PENDING') {
+                const jobRes = await pool.query('SELECT refurb_pickup_code, refurb_return_code FROM refurbish_jobs WHERE device_id = $1', [deviceId]);
+                if (jobRes.rows.length > 0) {
+                    return res.json({
+                        pickupCode: jobRes.rows[0].refurb_pickup_code,
+                        returnCode: jobRes.rows[0].refurb_return_code
+                    });
                 }
             }
 
-            // Audit the reveal
-            await pool.query(
-                `INSERT INTO audit_logs (user_id, action, target_id, details) 
-                 VALUES ($1, 'DUC_REVEAL', $2, $3)`,
-                [userId, deviceId, JSON.stringify({ device_id: deviceId })]
-            );
+            // Standard DUC logic for Waste
+            let duc = device.current_duc;
+            if (!duc) {
+                if (['RECYCLING_REQUESTED', 'COLLECTOR_ASSIGNED'].includes(device.current_state)) {
+                    duc = 'WST-' + crypto.randomInt(100000, 999999).toString();
+                    await pool.query('UPDATE devices SET current_duc = $1 WHERE id = $2', [duc, deviceId]);
+                } else {
+                    return res.status(400).json({ message: 'Verification code not available in current state' });
+                }
+            }
 
             res.json({ rawDuc: duc });
 

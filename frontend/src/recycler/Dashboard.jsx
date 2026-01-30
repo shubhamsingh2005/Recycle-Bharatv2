@@ -322,7 +322,13 @@ const RequestRow = ({ req, collectors, onAssign, isAssigning, navigate }) => {
             </td>
             <td className="p-4">
                 <div className="text-sm text-slate-600 dark:text-slate-300">{req.ownerId?.email || 'N/A'}</div>
-                <div className="text-[10px] text-slate-500">Citizen Account</div>
+                {req.source === 'Refurbisher Request' ? (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black bg-purple-500/10 text-purple-600 border border-purple-500/20 uppercase tracking-widest">
+                        REFURB HANDOVER
+                    </span>
+                ) : (
+                    <div className="text-[10px] text-slate-500">Citizen Account</div>
+                )}
             </td>
             <td className="p-4">
                 <div className="text-sm text-slate-400">{new Date(req.createdAt).toLocaleDateString()}</div>

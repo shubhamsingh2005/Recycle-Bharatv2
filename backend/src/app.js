@@ -47,6 +47,7 @@ app.use('/api/analytics', require('./routes/analyticsRoutes'));
 app.use('/api/incentives', require('./routes/incentiveRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/audit', require('./routes/auditRoutes'));
+app.use('/api/refurbish', require('./routes/refurbishRoutes'));
 
 // 404 Handler
 app.use((req, res, next) => {
