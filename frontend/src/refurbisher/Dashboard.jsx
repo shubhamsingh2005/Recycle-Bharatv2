@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRefurbish } from '../hooks/useRefurbish';
 import {
-    RefreshCw, Package, Truck, CheckCircle, Info,
+    RefreshCw, Package, Truck, CheckCircle, CheckCircle2, Info,
     Smartphone, Search, Loader2, AlertCircle, Trash2, Clock
 } from 'lucide-react';
 
