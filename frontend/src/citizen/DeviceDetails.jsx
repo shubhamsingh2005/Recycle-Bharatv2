@@ -45,8 +45,7 @@ export default function DeviceDetails() {
         </div>
     );
 
-    const isRefurbishingPath = device.status.startsWith('REFURB') ||
-        ['UNDER_DIAGNOSTIC', 'PROPOSAL_PENDING', 'REPAIRING', 'PROPOSAL_REJECTED', 'WASTE_HANDOVER_PENDING'].includes(device.status);
+
 
     const recyclingTimeline = [
         { state: 'ACTIVE', label: t.registered, completed: !!device.createdAt },
@@ -69,7 +68,7 @@ export default function DeviceDetails() {
         { state: 'ACTIVE', label: 'Returned & Active', completed: device.status === 'ACTIVE' && !!device.updatedAt },
     ];
 
-    const timeline = isRefurbishingPath ? refurbTimeline : recyclingTimeline;
+
 
     const statusLabels = {
         COLLECTED: t.inTransit,
@@ -138,16 +137,43 @@ export default function DeviceDetails() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Timeline Column */}
                 <div className="lg:col-span-2 space-y-8">
+                    {/* Recycler Timeline */}
                     <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 rounded-3xl p-8 shadow-lg dark:shadow-xl">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-8 flex items-center gap-2">
-                            {t.activityHistory}
+                            {t.recyclingTimeline || "Recycler Timeline"}
                         </h3>
                         <div className="space-y-10 relative pl-4">
                             <div className="absolute left-[31px] top-2 bottom-2 w-0.5 bg-slate-200 dark:bg-slate-800/50" />
 
-                            {timeline.map((step, idx) => (
+                            {recyclingTimeline.map((step, idx) => (
                                 <div key={idx} className="relative flex gap-6 group">
                                     <div className={`relative z-10 flex items-center justify-center w-9 h-9 rounded-2xl border-2 transition-all duration-500 ${step.completed ? 'bg-emerald-500 border-emerald-500 text-white dark:text-black shadow-lg shadow-emerald-500/20 scale-110' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-500'}`}>
+                                        {step.completed ? <CheckCircle2 className="w-5 h-5" /> : <div className="w-2 h-2 bg-slate-300 dark:bg-slate-700 rounded-full" />}
+                                    </div>
+                                    <div className="pt-0.5">
+                                        <div className={`font-bold transition-colors ${step.completed ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-600'}`}>
+                                            {step.label}
+                                        </div>
+                                        <div className="text-xs text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-tighter font-medium">
+                                            {step.completed ? t.verifiedEntry : t.pendingStage}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Refurbisher Timeline */}
+                    <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 rounded-3xl p-8 shadow-lg dark:shadow-xl">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-8 flex items-center gap-2">
+                            {t.refurbishingTimeline || "Refurbisher Timeline"}
+                        </h3>
+                        <div className="space-y-10 relative pl-4">
+                            <div className="absolute left-[31px] top-2 bottom-2 w-0.5 bg-slate-200 dark:bg-slate-800/50" />
+
+                            {refurbTimeline.map((step, idx) => (
+                                <div key={idx} className="relative flex gap-6 group">
+                                    <div className={`relative z-10 flex items-center justify-center w-9 h-9 rounded-2xl border-2 transition-all duration-500 ${step.completed ? 'bg-blue-500 border-blue-500 text-white dark:text-black shadow-lg shadow-blue-500/20 scale-110' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-500'}`}>
                                         {step.completed ? <CheckCircle2 className="w-5 h-5" /> : <div className="w-2 h-2 bg-slate-300 dark:bg-slate-700 rounded-full" />}
                                     </div>
                                     <div className="pt-0.5">

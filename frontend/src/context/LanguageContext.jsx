@@ -97,6 +97,8 @@ export const translations = {
         statusUpdate: 'Status Change',
         rewardEarned: 'Credits Added',
         systemEvent: 'System Info',
+        recyclingTimeline: 'Recycling Timeline',
+        refurbishingTimeline: 'Refurbishing Timeline',
 
         // Device Details
         backToMyDevices: 'Back',
@@ -281,6 +283,8 @@ export const translations = {
         statusUpdate: 'स्थिति अपडेट',
         rewardEarned: 'पुरस्कार अर्जित किया',
         systemEvent: 'सिस्टम इवेंट',
+        recyclingTimeline: 'रीसाइक्लिंग समयरेखा',
+        refurbishingTimeline: 'नवीनीकरण समयरेखा',
 
         // Device Details
         backToMyDevices: 'मेरे उपकरणों पर वापस जाएं',
@@ -460,6 +464,8 @@ export const translations = {
         statusUpdate: 'ਸਥਿਤੀ ਅਪਡੇਟ',
         rewardEarned: 'ਇਨਾਮ ਪ੍ਰਾਪਤ ਕੀਤਾ',
         systemEvent: 'ਸਿਸਟਮ ਇਵੈਂਟ',
+        recyclingTimeline: 'ਰੀਸਾਈਕਲਿੰਗ ਸਮਾਂਰੇਖਾ',
+        refurbishingTimeline: 'ਨਵੀਨੀਕਰਨ ਸਮਾਂਰੇਖਾ',
 
         // Device Details
         backToMyDevices: 'ਮੇਰੇ ਡਿਵਾਈਸਾਂ ਤੇ ਵਾਪਸ ਜਾਓ',
