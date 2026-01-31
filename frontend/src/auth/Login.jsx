@@ -3,7 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Recycle, Truck, Factory, Building2, User, Leaf, ArrowLeft, Sun, Moon, Globe, X, Code, Github, Linkedin, KeyRound, Eye, EyeOff, CreditCard, Phone, Check, RefreshCw } from 'lucide-react';
+import { Recycle, Truck, Factory, Building2, User, Leaf, ArrowLeft, Sun, Moon, Globe, X, Code, Github, Linkedin, KeyRound, Eye, EyeOff, CreditCard, Phone, Check, RefreshCw, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import api from '@/api/axios';
@@ -158,7 +158,7 @@ export default function Login() {
     // Read role from URL parameter and auto-select it
     useEffect(() => {
         const roleParam = searchParams.get('role');
-        if (roleParam && ['citizen', 'collector', 'recycler', 'government', 'refurbisher', 'refurbisher_agent'].includes(roleParam)) {
+        if (roleParam && ['citizen', 'collector', 'recycler', 'government', 'refurbisher', 'refurbisher_agent', 'admin'].includes(roleParam)) {
             setSelectedRole(roleParam);
         }
     }, [searchParams]);
@@ -302,6 +302,20 @@ export default function Login() {
             activeBg: 'bg-sky-600',
             registerPath: '/register/refurbisher-agent',
             registerLabel: 'Join as Agent'
+        },
+        {
+            id: 'admin',
+            title: 'Administrator',
+            description: 'System-wide access for platform management and monitoring.',
+            icon: ShieldCheck,
+            color: 'from-red-500 to-red-600',
+            hoverColor: 'hover:from-red-600 hover:to-red-700',
+            iconBg: 'bg-red-100',
+            iconColor: 'text-red-600',
+            borderColor: 'border-red-600',
+            activeBg: 'bg-red-600',
+            registerPath: null, // No registration for admin
+            registerLabel: null
         },
     ];
 
